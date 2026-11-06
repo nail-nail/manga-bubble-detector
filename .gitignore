@@ -20,3 +20,6 @@ reports/smoke/
 
 # Downloaded Kaggle results: unpack them, don't commit the archive.
 *.zip
+
+# Self-scanned pages for the external test set. Copyrighted: never commit them.
+data/external/
