@@ -207,6 +207,8 @@ docs/DATA_NOTES.md   Dataset audit and split design
 
 ## License and credits
 
-Dataset by [PSImera](https://huggingface.co/datasets/PSImera/manga_bubbles_detect), CC BY-NC 4.0. Page
-images remain the property of their publishers, so none are included in this repo. Weights trained on
-this data are for non-commercial use.
+- **Code:** MIT, see [LICENSE](LICENSE).
+- **Dataset:** by [PSImera](https://huggingface.co/datasets/PSImera/manga_bubbles_detect), CC BY-NC 4.0.
+  Page images remain the property of their publishers, so none are included in this repo.
+- **Trained weights:** derived from that dataset, so they are for non-commercial use only.
+- **Demo art:** [Pepper&Carrot](https://www.peppercarrot.com) by David Revoy, CC BY 4.0.
