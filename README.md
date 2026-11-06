@@ -38,19 +38,55 @@ is, and BCE provides stable gradients.
 
 ## Results
 
-> **Not yet run.** The table is filled in after GPU training and the final test evaluation.
-> Run `python -m src.evaluate --checkpoint checkpoints/best.pt --split test --final`.
+Test set: 444 pages and 4,361 bubbles from sources the model never trained on. It was evaluated once,
+after all choices were final. Precision, recall and F1 pool all bubbles, with a match requiring box
+IoU ≥ 0.5.
 
 | Model | Dice | IoU | Precision @0.5 | Recall @0.5 | F1 | Params | CPU ms/page |
 |---|---|---|---|---|---|---|---|
-| Baseline (OpenCV, no ML) | | | | | | 0 | |
-| U-Net (from scratch) | | | | | | | |
+| Baseline (OpenCV, no ML) | 0.444 | 0.326 | 0.823 | 0.332 | 0.473 | 0 | 6 |
+| **U-Net (from scratch)** | **0.802** | **0.713** | **0.886** | **0.607** | **0.720** | 7.8M | 1,228 |
 
-Test set: 444 pages and 4,361 bubbles from sources the model never trained on. Precision, recall and
-F1 pool all bubbles, with a match requiring box IoU ≥ 0.5.
+CPU latency is the median per page for preprocessing, the U-Net at 512 px and postprocessing, not
+counting image decoding, on an Intel Core Ultra 9 185H. Training took 41 epochs on a Kaggle T4, about 85 s each, with early stopping keeping
+epoch 33.
 
-For reference, the tuned OpenCV baseline scores F1 0.43 on **validation** (precision 0.79, recall 0.30,
-9 ms/page). It is precise but misses most bubbles.
+### By test source
+
+| Source | Pages | Bubbles | Precision | Recall | F1 | Baseline F1 |
+|---|---|---|---|---|---|---|
+| `portrait_764` | 188 | 1,545 | 0.867 | 0.640 | 0.736 | 0.432 |
+| `scan_1044` | 164 | 1,601 | 0.930 | 0.587 | 0.719 | 0.547 |
+| `screens_3840` | 92 | 1,215 | 0.858 | 0.591 | 0.700 | 0.415 |
+
+### Validation vs test
+
+| Split | Precision | Recall | F1 |
+|---|---|---|---|
+| Val (`portrait_2150`, used for tuning) | 0.907 | 0.772 | 0.834 |
+| Test (3 unseen sources) | 0.886 | 0.607 | 0.720 |
+
+Precision holds up on new sources. Recall drops, so the model mostly fails by **missing** labels rather
+than inventing them. The postprocessing threshold (0.9) was tuned on a single validation source, and a
+model is usually less confident on art it hasn't seen, so a lower threshold might suit new sources
+better. That can't be checked without a second validation source, because tuning on test would leak
+it.
+
+### Error analysis
+
+The 10 worst pages of each split, ranked by per-page F1, are mostly labels for text that isn't in a
+speech bubble:
+
+- **Validation:** chapter titles, a contents page, borderless captions and handwritten text. The label
+  boxes the whole text block while the model boxes a fragment, or erosion splits it. The rest are false
+  detections on sound effects and a shop sign on pages with no bubbles.
+- **Test:** panel numbers, character name tags, a Korean chapter title and sound-effect lettering.
+  The model predicts nothing on these pages, which is arguably right for a *bubble* detector, but each
+  one counts as a miss.
+
+So part of the recall gap comes from the dataset's broad idea of a "bubble". Ranking by per-page F1
+favours pages with only a few labels, though, so this list doesn't show where most of the 1,715 test
+misses are. Touching bubbles merging into one box are a likely source on busy pages.
 
 ## Data
 
