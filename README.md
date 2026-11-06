@@ -93,7 +93,41 @@ speech bubble:
 
 So part of the recall gap comes from the dataset's broad idea of a "bubble". Ranking by per-page F1
 favours pages with only a few labels, though, so this list doesn't show where most of the 1,715 test
-misses are. Touching bubbles merging into one box are a likely source on busy pages.
+misses are. Touching bubbles merging into one box are a likely source on busy pages, and the external
+test below confirms it.
+
+### External test: a series it never saw
+
+To check how the model does outside this dataset, I hand-labelled 49 pages of *One Piece* (Japanese
+edition), photographed from a printed copy with a phone. The pages and labels aren't published, for
+copyright reasons. The photos add their own shift on top of the new art style: curved pages and uneven
+lighting.
+
+Every text region got one of five classes, following [docs/LABELING_GUIDE.md](docs/LABELING_GUIDE.md):
+572 speech, 1 thought, 73 narration, 235 sound effect and 23 other, 904 in all. The main score counts
+speech and thought balloons. A prediction that lands on another class is neutral: neither a hit nor a
+false positive. It was evaluated once, with the same checkpoint and postprocessing, nothing tuned on it.
+
+| Test set | Precision | Recall | F1 |
+|---|---|---|---|
+| Dataset test split (IoU ≥ 0.5) | 0.886 | 0.607 | 0.720 |
+| **One Piece (IoU ≥ 0.5)** | **0.731** | **0.464** | **0.568** |
+| One Piece (IoU ≥ 0.3, for reference) | 0.914 | 0.557 | 0.692 |
+
+Of the 573 balloons, 266 were matched, 236 had a prediction that overlapped but missed IoU 0.5 (109 at
+0.3–0.5, 127 below 0.3), and 71 had essentially none. The model gives 8.4 boxes per page for 11.7
+balloons. On the worst pages the cause is plain: **balloons that touch are merged into one box**, with
+one box covering four balloons on one page. One Piece joins balloons far more often than the training
+data. At IoU 0.3 precision is 0.914, so the model rarely boxes something that isn't text.
+
+Recall by class shows what the training labels taught: narration boxes 62% (45 of 73), sound effects
+0.4% (1 of 235), other text 13% (3 of 23).
+
+**A note on the labels.** Most speech boxes were first drawn around the text, not the balloon outline
+the training labels use. Against those, a correct balloon-sized prediction fails IoU 0.5, and F1 was
+0.358. [src/snap_labels.py](src/snap_labels.py) grew each box out to the balloon outline with image
+processing, never model predictions. Every page was checked by eye, and the 35 boxes it couldn't snap
+were checked and corrected by hand before the evaluation.
 
 ## Data
 
@@ -148,6 +182,9 @@ python -m src.baseline --split val --tune
 # Once only, when you're completely done changing things:
 python -m src.evaluate --checkpoint checkpoints/best.pt --split test --final
 python -m src.baseline --split test --final
+
+# External test set exported from Label Studio (see docs/LABELING_GUIDE.md)
+python -m src.evaluate_external --export path/to/export.json --images path/to/images
 ```
 
 ### Serve
@@ -197,13 +234,17 @@ src/
   train.py           Training loop, checkpoints, early stopping, resume
   postprocess.py     Mask → boxes
   evaluate.py        Dice, IoU, per-bubble P/R/F1, tuning, error analysis
+  evaluate_external.py  Score a hand-labelled Label Studio export (multi-class)
+  snap_labels.py     Grow text-tight label boxes to the balloon outline
   baseline.py        OpenCV baseline with no ML
   inference.py       Checkpoint → full page-to-boxes pipeline
   api.py             FastAPI service
 configs/default.yaml Hyperparameters
+configs/label_studio.xml  Labelling interface for the external test set
 notebooks/           EDA and GPU training
 tests/               Unit and end-to-end tests
 docs/DATA_NOTES.md   Dataset audit and split design
+docs/LABELING_GUIDE.md  Classes and box rules for the external test set
 ```
 
 ## Limitations
@@ -214,7 +255,9 @@ docs/DATA_NOTES.md   Dataset audit and split design
   reads that format.
 - **The split is source-level, not verified title-level.** The dataset has no title metadata, so image
   resolution stands in for source, backed by visual checks and duplicate detection.
-- **Touching bubbles can merge** into one box. Postprocessing has an erosion option that partly helps.
+- **Touching bubbles can merge** into one box. Postprocessing has an erosion option that partly helps,
+  but this is the main failure on One Piece, which joins balloons often. It matters downstream too: a
+  translator can't keep two speakers apart once their balloons share a box.
 - **Free-floating text and sound effects** can be detected as bubbles, and some labels mark them too.
 - **Colour and painted art is out of domain.** Training pages are black-and-white manga, and the demo
   shows a missed bubble on a dark painted background.

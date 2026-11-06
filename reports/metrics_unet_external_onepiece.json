@@ -1,0 +1,40 @@
+{
+  "pages": 49,
+  "bubbles": {
+    "precision": 0.7307692307692307,
+    "recall": 0.4642233856893543,
+    "f1": 0.567769477054429,
+    "tp": 266,
+    "fp": 98,
+    "fn": 307
+  },
+  "neutral_matches": 49,
+  "recall_by_class": {
+    "speech": {
+      "found": 265,
+      "total": 572,
+      "recall": 0.4632867132867133
+    },
+    "thought": {
+      "found": 1,
+      "total": 1,
+      "recall": 1.0
+    },
+    "narration": {
+      "found": 45,
+      "total": 73,
+      "recall": 0.6164383561643836
+    },
+    "sfx": {
+      "found": 1,
+      "total": 235,
+      "recall": 0.00425531914893617
+    },
+    "other": {
+      "found": 3,
+      "total": 23,
+      "recall": 0.13043478260869565
+    }
+  },
+  "checkpoint_version": "39c2e420451a"
+}
