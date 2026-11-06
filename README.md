@@ -7,7 +7,14 @@ Docker.
 This is the first stage of a planned open-source manga translator: **detect** → OCR → translate →
 typeset.
 
-<!-- TODO: add assets/demo.png. Use a page you have the rights to share, not a dataset page. -->
+![Detected bubbles on two Pepper&Carrot pages](assets/demo.jpg)
+
+Real output of `/predict/image` on two pages the model never saw. Left: both speech bubbles found, no
+false detections. Right: the bubble on a dark painted background is missed. This full-colour painted
+style is far from the black-and-white manga the model trained on.
+<sub>Art: [Pepper&Carrot](https://www.peppercarrot.com) episode 1 by David Revoy,
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Boxes drawn by this model; pages resized and
+placed side by side.</sub>
 
 ## How it works
 
@@ -145,9 +152,16 @@ python -m src.baseline --split test --final
 
 ### Serve
 
+Needs a trained checkpoint. Train your own, or download the trained weights (non-commercial use only)
+from the [v1.0 release](https://github.com/nail-nail/manga-bubble-detector/releases/tag/v1.0):
+
 ```bash
+gh release download v1.0 --repo nail-nail/manga-bubble-detector --dir checkpoints
 uvicorn src.api:app --port 8000        # Swagger UI at http://localhost:8000/docs
 ```
+
+`best.postprocess.json` holds the postprocessing settings tuned on validation and is loaded alongside
+`best.pt`.
 
 Or with Docker, which mounts the checkpoint so the image contains no weights:
 
@@ -202,6 +216,8 @@ docs/DATA_NOTES.md   Dataset audit and split design
   resolution stands in for source, backed by visual checks and duplicate detection.
 - **Touching bubbles can merge** into one box. Postprocessing has an erosion option that partly helps.
 - **Free-floating text and sound effects** can be detected as bubbles, and some labels mark them too.
+- **Colour and painted art is out of domain.** Training pages are black-and-white manga, and the demo
+  shows a missed bubble on a dark painted background.
 - **Small bubbles on two-page screenshots** lose detail at 512 px. Metrics are reported per source so
   this stays visible.
 
