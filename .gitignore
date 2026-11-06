@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Dataset images and generated masks. The images are the publishers' copyright: never commit them.
+data/raw/
+data/processed/
+
+# Model weights: publish these through HF Hub or a GitHub Release instead.
+checkpoints/*
+!checkpoints/.gitkeep
+
+# Generated overlays contain manga pages, so they stay local.
+reports/worst_*/
+reports/sanity_*.png
+reports/smoke/

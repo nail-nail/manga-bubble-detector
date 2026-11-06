@@ -1,0 +1,14 @@
+# Everything for data preparation, training, evaluation and tests.
+# Install PyTorch first for your platform: https://pytorch.org/get-started/locally/
+-r requirements-api.txt
+torch==2.15.0
+PyYAML==6.0.3
+tqdm==4.70.1
+ImageHash==4.3.2
+huggingface_hub==2.4.0
+matplotlib==3.11.2
+pytest==9.2.0
+httpx==0.28.1
+nbformat
+nbclient
+ipykernel

@@ -1,0 +1,45 @@
+seed: 42
+
+data:
+  processed_dir: data/processed
+  splits_dir: data/splits
+  image_size: 512          # Must be divisible by 16. Drop to 384 if GPU quota runs out.
+  num_workers: 2
+
+model:
+  in_channels: 1
+  base_channels: 32        # 32 gives about 7.8M parameters. Lower this if overfitting.
+
+loss:
+  bce_weight: 1.0
+  dice_weight: 1.0
+
+train:
+  epochs: 50
+  batch_size: 8
+  lr: 0.001
+  weight_decay: 0.0001
+  early_stopping_patience: 8
+  mixed_precision: true    # Only takes effect on a CUDA GPU.
+  checkpoint_dir: checkpoints
+  log_csv: reports/train_log.csv
+
+augment:
+  hflip_prob: 0.5          # No vertical flip: manga layouts are never upside down.
+  crop_prob: 0.5
+  crop_scale: [0.6, 1.0]   # Side length of the crop, as a fraction of the page.
+  rotate_degrees: 5
+  brightness: 0.15
+  contrast: 0.15
+
+postprocess:               # Starting values. `evaluate --tune` picks better ones on val.
+  threshold: 0.5
+  open_kernel: 3
+  min_area: 100
+  erode_px: 0
+
+tune_grid:
+  threshold: [0.3, 0.4, 0.5, 0.6, 0.7]
+  open_kernel: [3, 5]
+  min_area: [50, 100, 200, 400]
+  erode_px: [0, 2, 4]
