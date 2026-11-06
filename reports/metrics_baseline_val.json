@@ -21,7 +21,7 @@
       "fn": 986
     }
   },
-  "cpu_ms_per_page": 9.4,
+  "cpu_ms_per_page": 3.8,
   "parameters": 0,
   "baseline_params": {
     "white_threshold": 225,
