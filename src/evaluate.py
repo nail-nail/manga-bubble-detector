@@ -53,15 +53,17 @@ def box_iou(a, b) -> float:
     return float(overlap / (a[2] * a[3] + b[2] * b[3] - overlap))
 
 
-def match_boxes(preds: list[Box], targets, iou_threshold: float = IOU_MATCH) -> tuple[int, int, int]:
-    """Greedy one-to-one matching, highest score first. Returns TP, FP, FN.
+def assign_boxes(preds: list[Box], targets, iou_threshold: float = IOU_MATCH) -> dict[int, int]:
+    """Greedy one-to-one matching, highest score first. Returns {pred index: target index}.
 
     Each ground-truth box can be claimed once, so two predictions on one bubble
-    count as one hit and one false positive.
+    give one match and one unmatched prediction.
     """
     unmatched = list(range(len(targets)))
-    true_positives = 0
-    for pred in sorted(preds, key=lambda box: box.score, reverse=True):
+    pairs = {}
+    order = sorted(range(len(preds)), key=lambda i: preds[i].score, reverse=True)
+    for pred_index in order:
+        pred = preds[pred_index]
         coords = (pred.x, pred.y, pred.w, pred.h)
         best_iou, best_index = 0.0, None
         for index in unmatched:
@@ -69,9 +71,15 @@ def match_boxes(preds: list[Box], targets, iou_threshold: float = IOU_MATCH) -> 
             if iou > best_iou:
                 best_iou, best_index = iou, index
         if best_index is not None and best_iou >= iou_threshold:
-            true_positives += 1
+            pairs[pred_index] = best_index
             unmatched.remove(best_index)
-    return true_positives, len(preds) - true_positives, len(unmatched)
+    return pairs
+
+
+def match_boxes(preds: list[Box], targets, iou_threshold: float = IOU_MATCH) -> tuple[int, int, int]:
+    """Greedy one-to-one matching, highest score first. Returns TP, FP, FN."""
+    true_positives = len(assign_boxes(preds, targets, iou_threshold))
+    return true_positives, len(preds) - true_positives, len(targets) - true_positives
 
 
 def f1_from_counts(tp: int, fp: int, fn: int) -> tuple[float, float, float]:
