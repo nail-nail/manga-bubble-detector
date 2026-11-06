@@ -17,3 +17,6 @@ checkpoints/*
 reports/worst_*/
 reports/sanity_*.png
 reports/smoke/
+
+# Downloaded Kaggle results: unpack them, don't commit the archive.
+*.zip
