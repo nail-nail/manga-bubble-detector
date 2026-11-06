@@ -1,0 +1,7 @@
+{
+  "white_threshold": 225,
+  "min_area_frac": 0.002,
+  "max_area_frac": 0.1,
+  "min_solidity": 0.85,
+  "min_ink_frac": 0.01
+}
