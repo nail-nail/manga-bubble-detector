@@ -1,0 +1,48 @@
+{
+  "raw_pages": 2671,
+  "raw_by_source": {
+    "square_640": 1596,
+    "portrait_844": 407,
+    "portrait_764": 188,
+    "screens_3840": 92,
+    "other": 2,
+    "scan_1044": 164,
+    "portrait_2150": 222
+  },
+  "dropped_unreliable_empty": 245,
+  "dropped_cross_split_duplicates": 6,
+  "pages_with_a_duplicate": 1121,
+  "splits": {
+    "train": {
+      "pages": 1756,
+      "share": 0.726,
+      "bubbles": 10981,
+      "empty_pages": 40,
+      "by_source": {
+        "square_640": 1350,
+        "portrait_844": 404,
+        "other": 2
+      }
+    },
+    "val": {
+      "pages": 220,
+      "share": 0.091,
+      "bubbles": 1406,
+      "empty_pages": 19,
+      "by_source": {
+        "portrait_2150": 220
+      }
+    },
+    "test": {
+      "pages": 444,
+      "share": 0.183,
+      "bubbles": 4361,
+      "empty_pages": 14,
+      "by_source": {
+        "portrait_764": 188,
+        "screens_3840": 92,
+        "scan_1044": 164
+      }
+    }
+  }
+}
