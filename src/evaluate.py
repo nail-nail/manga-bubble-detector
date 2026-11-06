@@ -232,7 +232,9 @@ def main() -> None:
     samples = predict_split(model, loader, device)
 
     if args.tune:
-        params, _ = tune_postprocess(samples, config["tune_grid"])
+        # The grid is a postprocessing choice, not part of training, so read it from the
+        # current config file. That lets a finished checkpoint be retuned on a wider grid.
+        params, _ = tune_postprocess(samples, load_config(args.config)["tune_grid"])
         path = tuned_params_path(args.checkpoint)
         path.write_text(json.dumps(asdict(params), indent=2), encoding="utf-8")
         print(f"Tuned on val: {params}\nSaved to {path}")
